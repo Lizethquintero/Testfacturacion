@@ -55,6 +55,15 @@
                             type="object"
                             states="draft,sent"
                             class="btn-primary"/> RespuestaComprobante -->
+                        <button name="action_GetStatus"
+                            string="GetStatus"
+                            type="object"
+                            class="btn-primary"
+                            attrs="{'invisible': ['|', '|', '|',
+                                ('cufe_cude', '=', False),
+                                ('xml_file', '=', False),
+                                ('zipped_file', '=', False),
+                                ('state', 'in', ('draft', 'cancel'))]}"/>
                         <button name="validate_status_document_dian"
                             string="Response Document"
                             type="object"
