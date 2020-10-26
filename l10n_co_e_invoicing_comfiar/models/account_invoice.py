@@ -19,39 +19,6 @@ _logger = logging.getLogger(__name__)
 class AccountInvoice(models.Model):
 	_inherit = "account.move"
 
-	dian_document_lines = fields.One2many(
-		comodel_name='account.invoice.dian.document',
-		inverse_name='invoice_id',
-		string='Dian Document Lines')
-
-	operation_type = fields.Selection(
-		[('10', 'Standard *'),
-		 ('20', 'Credit note that references an e-invoice'),
-		 ('22', 'Credit note without reference to invoices *'),
-		 ('30', 'Debit note that references an e-invoice'),
-		 ('32', 'Debit note without reference to invoices *')],
-		string='Operation Type',
-		default='10')
-	invoice_type_code = fields.Selection(
-		[('01', 'Factura de Venta'),
-		 ('02', 'Factura de Venta Exportación'),
-		 ('03', 'Factura por Contingencia Facturador'),
-		 ('04', 'Factura por Contingencia DIAN')],
-		string='Invoice Type',
-		default='01')
-	send_invoice_to_dian = fields.Selection(
-		[('0', 'Immediately'),
-		 ('1', 'After 1 Day'),
-		 ('2', 'After 2 Days')],
-		string='Send Invoice to DIAN?',
-		default='0')
-
-	trm = fields.Float()
-	is_invoice_out_odoo = fields.Boolean('Creada fuera de odoo?')
-	id_invoice_refound = fields.Char('Factura')
-	uuid_invoice = fields.Char('Cufe')
-	issue_date_invoice = fields.Date('Fecha')
-	customizationid_invoice = fields.Integer(default=10)
 	ref1_comfiar = fields.Char(string='Referencia 1 Comfiar')
 	invoice_origin = fields.Char(readonly=False)
 	issue_time = fields.Char('Hora Emisión')

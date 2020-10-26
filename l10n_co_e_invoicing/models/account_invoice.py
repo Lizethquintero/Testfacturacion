@@ -34,6 +34,7 @@ class AccountInvoice(models.Model):
 		default='10')
 	invoice_type_code = fields.Selection(
 		[('01', 'Factura de Venta'),
+		 ('02', 'Factura de Venta Exportación'),
 		 ('03', 'Factura por Contingencia Facturador'),
 		 ('04', 'Factura por Contingencia DIAN')],
 		string='Invoice Type',
