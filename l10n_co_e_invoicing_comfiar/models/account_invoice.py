@@ -89,11 +89,11 @@ class AccountInvoice(models.Model):
 						record.trm = rate
 
 						if record.type == 'out_refund' and record.refund_type == 'debit':
-							type_account = '05'  # ND
+							comf_type_account = '05'  # ND
 						elif record.type == 'out_refund' and record.refund_type != 'debit':
-							type_account = '04'  # NC
+							comf_type_account = '04'  # NC
 						else:
-							type_account = '01'  # Invoice
+							comf_type_account = '01'  # Invoice
 
 					attach_pdf = False
 					if record.company_id.attach_pdf:
@@ -104,7 +104,7 @@ class AccountInvoice(models.Model):
 					dian_document = dian_document_obj.create({
 						'invoice_id': record.id,
 						'company_id': record.company_id.id,
-						'type_account': type_account,
+						'comf_type_account': comf_type_account,
 						'attach_pdf': attach_pdf
 					})
 					dian_document.comf_action_set_files()

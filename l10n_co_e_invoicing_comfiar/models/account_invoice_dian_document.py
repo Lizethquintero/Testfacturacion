@@ -46,36 +46,8 @@ DIAN = {'wsdl-hab': 'https://vpfe-hab.dian.gov.co/WcfDianCustomerServices.svc?ws
         'catalogo': 'https://catalogo-vpfe.dian.gov.co/Document/FindDocument?documentKey={}&partitionKey={}&emissionDate={}'}
 
 class AccountInvoiceDianDocument(models.Model):
-    ''''''
-    _name = "account.invoice.dian.document"
+    _inherit = "account.invoice.dian.document"
 
-    state = fields.Selection(
-        [('draft', 'Draft'),
-         ('sent', 'Sent'),
-         ('done', 'Done'),
-         ('cancel', 'Cancel')],
-        string='State',
-        readonly=True,
-        default='draft')
-    invoice_id = fields.Many2one(
-        'account.move',
-        string='Invoice')
-    company_id = fields.Many2one(
-        'res.company',
-        string='Company')
-    invoice_url = fields.Char(string='Invoice Url')
-    # cufe_cude_uncoded = fields.Char(string='CUFE/CUDE Uncoded')
-    cufe_cude = fields.Char(string='CUFE')
-    cude = fields.Char(string='CUDE')
-    # software_security_code_uncoded = fields.Char(string='SoftwareSecurityCode Uncoded')
-    software_security_code = fields.Char(string='SoftwareSecurityCode')
-    xml_filename = fields.Char(string='XML Filename')
-    xml_file = fields.Binary(string='XML File')
-    xml_file_send_comfiar = fields.Binary(string='XML File Send to Comfiar')
-    zipped_filename = fields.Char(string='Zipped Filename')
-    zipped_file = fields.Binary(string='Zipped File')
-    # zip_key = fields.Char(string='ZipKey')
-    mail_sent = fields.Boolean(string='Mail Sent?')
     # ar_xml_filename = fields.Char(string='ApplicationResponse XML Filename')
     # ar_xml_file = fields.Binary(string='ApplicationResponse XML File')
     # get_status_zip_status_code = fields.Selection(
@@ -87,16 +59,9 @@ class AccountInvoiceDianDocument(models.Model):
     #     string='StatusCode',
     #     default=False)
     # get_status_zip_response = fields.Text(string='Response')
-    qr_image = fields.Binary("QR Code", compute='_generate_qr_code')
-    dian_document_line_ids = fields.One2many(
-        comodel_name='account.invoice.dian.document.line',
-        inverse_name='dian_document_id',
-        string='DIAN Document Lines')
-    profile_execution_id = fields.Selection(
-        string='Destination Environment of Document',
-        related='company_id.profile_execution_id',
-        store=False)
     # INFO TRANSACCION
+    cude = fields.Char(string='CUDE')
+    xml_file_send_comfiar = fields.Binary(string='XML File Send to Comfiar')
     prefix = fields.Char(string='Prefix')
     nroCbte = fields.Char(string='Number Document')
     comf_type_account = fields.Selection(
@@ -519,7 +484,7 @@ class AccountInvoiceDianDocument(models.Model):
         _logger.info('lo q envia')
         _logger.info(self.invoice_id.payment_mean_code_id)
         return {
-            'codDoc': self.type_account,
+            'codDoc': self.comf_type_account,
             'nroCbte': self._get_nroCbte()['nroCbte'],
             'puntoDeVentaId': active_dian_resolution['puntoDeVentaId'],
             'DocOrigin': self.invoice_id.invoice_origin or '',
@@ -1118,7 +1083,7 @@ class AccountInvoiceDianDocument(models.Model):
         if not journal:
             journal = self.invoice_id.journal_id
         if not type_invoice:
-            type_invoice = self.type_account
+            type_invoice = self.comf_type_account
 
         sequence = journal.sequence_id
         if type_invoice in ('04', 'credit'):
@@ -1231,7 +1196,7 @@ class AccountInvoiceDianDocument(models.Model):
             'XML': '<![CDATA[' + xml_str + ']]>', # XML
             'cuitAProcesar': self.company_id.partner_id.identification_document,  # cuitAProcesar = NIT
             'puntoDeVentaId': puntoDeVentaId,    # puntoDeVentaId
-            'tipoDeComprobanteId': self.type_account,    # tipoDeComprobanteId
+            'tipoDeComprobanteId': self.comf_type_account,    # tipoDeComprobanteId
             'formatoId': self.company_id.formatoId,  # formatoId
             'SesionId': self.company_id.sesion_id, # %stoken/%SesionId
             'FechaVencimiento': self.company_id.date_due_sesion, # %stoken/%FechaVencimiento
@@ -1286,7 +1251,7 @@ class AccountInvoiceDianDocument(models.Model):
         else:
             result = etree.fromstring(self.transaction_response.encode('utf-8'))
             if self.invoice_id.type == 'out_invoice':
-                self.type_account = '01'
+                self.comf_type_account = '01'
         
         for element in result.iter('ID'):
             self.transaction_id = element.text
@@ -1470,7 +1435,7 @@ class AccountInvoiceDianDocument(models.Model):
         values = {
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaId': self._get_puntoDeVentaId(),
-            'tipoDeComprobanteId': self.type_account,
+            'tipoDeComprobanteId': self.comf_type_account,
             'nroCbte': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,
@@ -1548,7 +1513,7 @@ class AccountInvoiceDianDocument(models.Model):
             'transaccionId': self.transaction_id,
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaId': self._get_puntoDeVentaId(),
-            'tipoComprobanteId': self.type_account,
+            'tipoComprobanteId': self.comf_type_account,
             'numeroComprobante': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,
@@ -1615,7 +1580,7 @@ class AccountInvoiceDianDocument(models.Model):
             'transaccionId': self.transaction_id,
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaDesc': self.prefix,
-            'tipoComprobanteId': self.type_account,
+            'tipoComprobanteId': self.comf_type_account,
             'numeroComprobante': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,
@@ -1683,7 +1648,7 @@ class AccountInvoiceDianDocument(models.Model):
             'transaccionId': self.transaction_id,
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaId': self._get_puntoDeVentaId(),
-            'tipoComprobanteId': self.type_account,
+            'tipoComprobanteId': self.comf_type_account,
             'numeroComprobante': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,
@@ -1751,7 +1716,7 @@ class AccountInvoiceDianDocument(models.Model):
             'transaccionId': self.transaction_id,
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaDesc': self.prefix,
-            'tipoComprobanteId': self.type_account,
+            'tipoComprobanteId': self.comf_type_account,
             'numeroComprobante': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,
@@ -1820,7 +1785,7 @@ class AccountInvoiceDianDocument(models.Model):
             'pdf': pdf[0].decode('utf-8', 'ignore'),
             'cuitId': self.company_id.partner_id.identification_document,
             'puntoDeVentaId': self._get_puntoDeVentaId(),
-            'tipoComprobanteId': self.type_account,
+            'tipoComprobanteId': self.comf_type_account,
             'nroCbte': self.nroCbte,
             'SesionId': self.company_id.sesion_id,
             'FechaVencimiento': self.company_id.date_due_sesion,

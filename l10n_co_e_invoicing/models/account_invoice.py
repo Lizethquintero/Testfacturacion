@@ -59,13 +59,18 @@ class AccountInvoice(models.Model):
 		_logger.info('validatee')
 
 		res = super(AccountInvoice, self).post()
+		_logger.info('type coountttt2')
+		_logger.info(self.company_id.einvoicing_enabled)
+		_logger.info(self.company_id.type_billing)
 
 		if self.company_id.einvoicing_enabled and self.company_id.type_billing == '1':
+			_logger.info('type coountttt2')
 			self.post_directa()
 
 		return res
 
 	def post_directa(self):
+		_logger.info('type coountttt')
 
 		if self.company_id.einvoicing_enabled:
 			if self.type in ("out_invoice", "out_invoice_note", "out_refund"):
@@ -90,6 +95,9 @@ class AccountInvoice(models.Model):
 				else:
 					type_account = 'invoice'
 
+				_logger.info('type coountttt')
+				_logger.info('type coountttt')
+				_logger.info(type_account)
 				dian_document_obj = self.env['account.invoice.dian.document']
 				dian_document = dian_document_obj.create({
 					'invoice_id': self.id,
